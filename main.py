@@ -65,21 +65,6 @@ def get_challonge_brackets(urls, key):
         brackets.append(get_challonge_bracket(url, key))
     return brackets
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def get_code_from_URL(url):
     s = url
     start = "tournament/"
@@ -88,39 +73,10 @@ def get_code_from_URL(url):
     return output
 
 
-
 def get_smash_bracket(url, key):
     event_code = get_code_from_URL(url)
-    bracket = smash.tournament_show_sets(event_code, "smash-ultimate-singles")
-    print(bracket)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    info = smash.tournament_show(event_code)
+    return info
 
 def get_smash_brackets(urls, key):
     brackets = list()
@@ -144,6 +100,12 @@ def collect_data(api_keys):
 
 
 def process_data(d):
+    challonge_info = d[0]
+    smash_info = d[1]
+
+
+
+
     return d
 
 def analyze_data():
@@ -152,9 +114,13 @@ def analyze_data():
 def predict(m):
     return m
 
+def write_to_file(prediction):
+    pass
+
 keys = get_API_keys()
 data = collect_data(keys)
 data = process_data(data)
 model = analyze_data()
 
 prediction = predict(model)
+write_to_file(prediction)
