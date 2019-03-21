@@ -4,6 +4,15 @@ import json
 smash = pysmash.SmashGG()
 
 def get_API_keys():
+    '''
+    Sample apikey.txt:
+
+    {
+        "smash.gg": "token",
+        "challonge": "key"
+    }
+    '''
+
     with open("apikey.txt", 'r') as f:
         json_keys = json.loads(f.read())
     challonge_key = json_keys["challonge"]
