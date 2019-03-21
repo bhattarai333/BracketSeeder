@@ -67,6 +67,8 @@ def get_challonge_bracket(url, key):
     endpoint = "https://challonge.com/api/tournaments/%s.json?include_matches=1&include_participants=1&api_key=%s" % (tournament_name, key)
     response = requests.get(endpoint)
     json_data = json.loads(response.content.decode())
+    f = open("output.txt", "w")
+    f.write(json.dumps(json_data))
     return json_data
 
 def get_challonge_brackets(urls, key):

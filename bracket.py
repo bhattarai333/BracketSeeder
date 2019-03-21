@@ -1,5 +1,6 @@
 class Bracket:
     participants = []
+    head_to_head= {}
     info_json = ""
     isSmashGG = True
 
