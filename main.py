@@ -1,7 +1,11 @@
 import requests
 import pysmash
 import json
+import numpy as np
+import pandas as pd
+
 import bracket
+import set
 smash = pysmash.SmashGG()
 
 def get_API_keys():
@@ -113,12 +117,16 @@ def collect_data(api_keys):
 def process_challonge(challonge):
     participants = challonge["tournament"]["participants"]
     players = []
+    IDs = {}
     for participant in participants:
         participant = participant["participant"]
         player_data = []
         name = participant["name"]
         placing = participant["final_rank"]
         seed_distance = participant["seed"] - placing
+        ID = participant["id"]
+        IDs[ID] = name
+
 
         player_data.append(placing)
         player_data.append(name)
@@ -126,7 +134,31 @@ def process_challonge(challonge):
         players.append(player_data)
     players = sorted(players, key=lambda x: x[0])
 
-    b = bracket.Bracket(players, challonge, 0)
+    names = [row[1] for row in players]
+    head_to_head = pd.DataFrame(index=names, columns=names)
+
+
+
+
+    matches = challonge["tournament"]["matches"]
+    for match in matches:
+        match = match["match"]
+        winner_ID = match["winner_id"]
+        winner_name = IDs[winner_ID]
+        loser_ID = match["loser_id"]
+        loser_name = IDs[loser_ID]
+        score = match["scores_csv"]
+        s = set.Set(winner_name, loser_name, score,)
+        try:
+            head_to_head[winner_name][loser_name].append(s)
+        except AttributeError:
+            empty_list = list()
+            empty_list.append(s)
+            head_to_head[winner_name][loser_name] = empty_list
+
+    print(head_to_head)
+
+    b = bracket.Bracket(players, challonge, head_to_head, 0)
     return b
 
 def process_challonge_list(challonge_info):
