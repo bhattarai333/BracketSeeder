@@ -88,7 +88,6 @@ def get_code_from_URL(url):
     output = s[s.find(start) + len(start):s.rfind(end)]  # find between
     return output
 
-
 def get_smash_bracket(url, key):
     event_code = get_code_from_URL(url)
     info = (smash.tournament_show(event_code))
@@ -100,19 +99,6 @@ def get_smash_brackets(urls, key):
         brackets.append(get_smash_bracket(url, key))
     return brackets
 
-def collect_data(api_keys):
-    challonge_key = api_keys[0]
-    smash_key = api_keys[1]
-
-    urls = get_urls("tournaments.txt")
-    separated_urls = separate_websites(urls)
-    challonge_url_list = separated_urls[0]
-    smash_url_list = separated_urls[1]
-    challonge_brackets = get_challonge_brackets(challonge_url_list, challonge_key)
-    smash_brackets = get_smash_brackets(smash_url_list, smash_key)
-    f = open("output.txt", "w")
-    f.write(json.dumps(smash_brackets[0]))
-    return challonge_brackets, smash_brackets
 
 def process_challonge(challonge):
     participants = challonge["tournament"]["participants"]
@@ -156,7 +142,6 @@ def process_challonge(challonge):
             empty_list.append(s)
             head_to_head[winner_name][loser_name] = empty_list
 
-    print(head_to_head)
 
     b = bracket.Bracket(players, challonge, head_to_head, 0)
     return b
@@ -168,25 +153,64 @@ def process_challonge_list(challonge_info):
         challonge_brackets.append(result)
     return challonge_brackets
 
-def process_smash(smashgg):
+
+
+
+
+
+
+
+
+
+
+
+
+def process_smash(smashgg, key):
+    print(smashgg)
     return smashgg
 
-def process_smash_list(smash_info):
+def process_smash_list(smash_info, key):
     smash_brackets = []
     for smashgg in smash_info:
-        result = process_smash(smashgg)
+        result = process_smash(smashgg, key)
         smash_brackets.append(result)
     return smash_brackets
 
-def process_data(d):
+
+
+
+
+
+
+
+
+
+
+
+
+def collect_data(api_keys):
+    challonge_key = api_keys[0]
+    smash_key = api_keys[1]
+
+    urls = get_urls("tournaments.txt")
+    separated_urls = separate_websites(urls)
+    challonge_url_list = separated_urls[0]
+    smash_url_list = separated_urls[1]
+    challonge_brackets = get_challonge_brackets(challonge_url_list, challonge_key)
+    smash_brackets = get_smash_brackets(smash_url_list, smash_key)
+    f = open("output.txt", "w")
+    f.write(json.dumps(smash_brackets[0]))
+    return challonge_brackets, smash_brackets
+
+def process_data(d, smashkey):
     challonge_info = d[0]
     smash_info = d[1]
 
     challonge_brackets = process_challonge_list(challonge_info)
-    smash_brackets = process_smash_list(smash_info)
+    smash_brackets = process_smash_list(smash_info, smashkey)
 
 
-    return d #delete this
+    return challonge_brackets + smash_brackets
 
 def analyze_data():
     return "To Do"
@@ -199,7 +223,7 @@ def write_to_file(prediction):
 
 keys = get_API_keys()
 data = collect_data(keys)
-data = process_data(data)
+data = process_data(data, keys[1])
 model = analyze_data()
 
 prediction = predict(model)
