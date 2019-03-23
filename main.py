@@ -7,6 +7,7 @@ import pandas as pd
 import bracket
 import set
 smash = pysmash.SmashGG()
+game = "smash-ultimate-singles"
 
 def get_API_keys():
     """
@@ -90,7 +91,7 @@ def get_code_from_URL(url):
 
 def get_smash_bracket(url, key):
     event_code = get_code_from_URL(url)
-    info = (smash.tournament_show(event_code))
+    info = (smash.tournament_show_event_brackets(event_code, game))
     return info
 
 def get_smash_brackets(urls, key):
@@ -142,7 +143,7 @@ def process_challonge(challonge):
             empty_list.append(s)
             head_to_head[winner_name][loser_name] = empty_list
 
-
+    #print(head_to_head)
     b = bracket.Bracket(players, challonge, head_to_head, 0)
     return b
 
@@ -166,8 +167,9 @@ def process_challonge_list(challonge_info):
 
 
 def process_smash(smashgg, key):
-    print(smashgg)
-    return smashgg
+    bracket_IDs = smashgg["bracket_ids"]
+    print(bracket_IDs)
+    return smashgg  #delete this
 
 def process_smash_list(smash_info, key):
     smash_brackets = []
