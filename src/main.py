@@ -1,11 +1,11 @@
 import requests
 import pysmash
 import json
-import numpy as np
+#import numpy as np
 import pandas as pd
 
-import bracket
-import set
+import src.bracket as bracket
+import src.set as smash_set
 smash = pysmash.SmashGG()
 game = "smash-ultimate-singles"
 
@@ -135,7 +135,7 @@ def process_challonge(challonge):
         loser_ID = match["loser_id"]
         loser_name = IDs[loser_ID]
         score = match["scores_csv"]
-        s = set.Set(winner_name, loser_name, score,)
+        s = smash_set.Set(winner_name, loser_name, score, )
         try:
             head_to_head[winner_name][loser_name].append(s)
         except AttributeError:
