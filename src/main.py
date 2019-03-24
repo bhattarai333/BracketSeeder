@@ -1,11 +1,17 @@
 import requests
+import graphene
 import pysmash
 import json
 #import numpy as np
 import pandas as pd
 
+
+import sys
+
 import src.bracket as bracket
 import src.set as smash_set
+import src.query as query
+
 smash = pysmash.SmashGG()
 game = "smash-ultimate-singles"
 
@@ -26,6 +32,14 @@ def get_API_keys():
     return challonge_key, smash_key
 
 def get_urls(tournament_file_path):
+    """
+    Sample tournaments.txt:
+
+    https://spartanweeklies.challonge.com/sw40
+    https://smash.gg/tournament/spartan-weeklies-41/details
+    https://smash.gg/tournament/spartan-weeklies-42/details
+    """
+
     output = []
     with open(tournament_file_path, 'r') as f:
         for line in f:
@@ -91,7 +105,7 @@ def get_code_from_URL(url):
 
 def get_smash_bracket(url, key):
     event_code = get_code_from_URL(url)
-    info = (smash.tournament_show_event_brackets(event_code, game))
+    info = (smash.tournament_show_with_brackets(event_code, event=game))
     return info
 
 def get_smash_brackets(urls, key):
@@ -100,6 +114,14 @@ def get_smash_brackets(urls, key):
         brackets.append(get_smash_bracket(url, key))
     return brackets
 
+def add_head_to_head(head_to_head, winner_name, loser_name, s):
+    try:
+        head_to_head[winner_name][loser_name].append(s)
+    except AttributeError:
+        empty_list = list()
+        empty_list.append(s)
+        head_to_head[winner_name][loser_name] = empty_list
+    return head_to_head
 
 def process_challonge(challonge):
     participants = challonge["tournament"]["participants"]
@@ -136,12 +158,7 @@ def process_challonge(challonge):
         loser_name = IDs[loser_ID]
         score = match["scores_csv"]
         s = smash_set.Set(winner_name, loser_name, score, )
-        try:
-            head_to_head[winner_name][loser_name].append(s)
-        except AttributeError:
-            empty_list = list()
-            empty_list.append(s)
-            head_to_head[winner_name][loser_name] = empty_list
+        head_to_head = add_head_to_head(head_to_head, winner_name, loser_name, s)
 
     #print(head_to_head)
     b = bracket.Bracket(players, challonge, head_to_head, 0)
@@ -154,22 +171,61 @@ def process_challonge_list(challonge_info):
         challonge_brackets.append(result)
     return challonge_brackets
 
-
-
-
-
-
-
-
-
-
-
+def get_score_from_match(match):
+    entrant_1_score = match["entrant_1_score"]
+    entrant_2_score = match["entrant_2_score"]
+    score = entrant_1_score + '-' + entrant_2_score
+    return score
 
 
 def process_smash(smashgg, key):
+    endpoint = "https://api.smash.gg/gql/alpha"
+    tournament_ID = smashgg["tournament_id"]
     bracket_IDs = smashgg["bracket_ids"]
-    print(bracket_IDs)
-    return smashgg  #delete this
+    bracket_IDs = bracket_IDs[:-1]
+    players = []
+    IDs = {}
+    for bracket_ID in bracket_IDs:
+        players_json = smash.bracket_show_players(bracket_ID)
+        ind_players = []
+        print(len(players_json))
+        for player in players_json:
+            print(player)
+            player_data = []
+            name = player["tag"]
+            placing = player["final_placement"]
+            seed_distance = player["seed"] - placing
+            ID = player["entrant_id"]
+            IDs[ID] = name
+
+            player_data.append(placing)
+            player_data.append(name)
+            player_data.append(seed_distance)
+            ind_players.append(player_data)
+        players += ind_players
+
+    players = sorted(players, key=lambda x: x[0])
+
+    names = [row[1] for row in players]
+    head_to_head = pd.DataFrame(index=names, columns=names)
+
+    for bracket_ID in bracket_IDs:
+        matches = smash.bracket_show_sets(bracket_ID)
+        for match in matches:
+            #print(match)
+            try:
+                winner_ID = match["winner_id"]
+                winner_name = IDs[winner_ID]
+                loser_ID = match["loser_id"]
+                loser_name = IDs[loser_ID]
+                score = get_score_from_match(match)
+                s = smash_set.Set(winner_name, loser_name, score, )
+                head_to_head = add_head_to_head(head_to_head, winner_name, loser_name, s)
+            except KeyError:
+                continue
+
+    b = bracket.Bracket(players, smashgg, head_to_head, 1)
+    return b
 
 def process_smash_list(smash_info, key):
     smash_brackets = []
@@ -177,18 +233,6 @@ def process_smash_list(smash_info, key):
         result = process_smash(smashgg, key)
         smash_brackets.append(result)
     return smash_brackets
-
-
-
-
-
-
-
-
-
-
-
-
 
 def collect_data(api_keys):
     challonge_key = api_keys[0]
@@ -223,8 +267,10 @@ def predict(m):
 def write_to_file(prediction):
     pass
 
+print("Starting Data Collection")
 keys = get_API_keys()
 data = collect_data(keys)
+print("Starting Data Processing")
 data = process_data(data, keys[1])
 model = analyze_data()
 
