@@ -1,16 +1,12 @@
 import requests
-import graphene
 import pysmash
 import json
-#import numpy as np
 import pandas as pd
 
 
-import sys
 
 import src.bracket as bracket
 import src.set as smash_set
-import src.query as query
 
 smash = pysmash.SmashGG()
 game = "smash-ultimate-singles"
