@@ -156,7 +156,6 @@ def process_challonge(challonge):
         s = smash_set.Set(winner_name, loser_name, score, )
         head_to_head = add_head_to_head(head_to_head, winner_name, loser_name, s)
 
-    #print(head_to_head)
     b = bracket.Bracket(players, challonge, head_to_head, 0)
     return b
 
@@ -184,9 +183,7 @@ def process_smash(smashgg, key):
     for bracket_ID in bracket_IDs:
         players_json = smash.bracket_show_players(bracket_ID)
         ind_players = []
-        print(len(players_json))
         for player in players_json:
-            print(player)
             player_data = []
             name = player["tag"]
             placing = player["final_placement"]
@@ -208,7 +205,6 @@ def process_smash(smashgg, key):
     for bracket_ID in bracket_IDs:
         matches = smash.bracket_show_sets(bracket_ID)
         for match in matches:
-            #print(match)
             try:
                 winner_ID = match["winner_id"]
                 winner_name = IDs[winner_ID]
@@ -254,8 +250,8 @@ def process_data(d, smashkey):
 
     return challonge_brackets + smash_brackets
 
-def analyze_data():
-    return "To Do"
+def analyze_data(brackets):
+    return brackets
 
 def predict(m):
     return m
@@ -268,7 +264,8 @@ keys = get_API_keys()
 data = collect_data(keys)
 print("Starting Data Processing")
 data = process_data(data, keys[1])
-model = analyze_data()
+print("Starting Data Analysis")
+model = analyze_data(data)
 
 prediction = predict(model)
 write_to_file(prediction)
