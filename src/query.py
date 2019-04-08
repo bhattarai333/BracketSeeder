@@ -1,2 +1,0 @@
-class EventEntrants:
-    pass

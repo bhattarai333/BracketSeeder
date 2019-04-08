@@ -15,7 +15,14 @@ class Bracket:
         self.entrant_numbers = len(participants)
 
     def __str__(self):
-        return "%s %s %s" % (self.entrant_numbers, self.participants[0][0], self.isSmashGG)
+        if self.isSmashGG:
+            s = "smash.gg"
+        else:
+            s = "challonge"
+        return "%s entrants, %s(W), %s" % (self.entrant_numbers, self.participants[0][1], s)
+
+    def __repr__(self):
+        return self.__str__()
 
     def get_standings(self):
         return self.participants
