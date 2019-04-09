@@ -61,7 +61,6 @@ else:
     for weekly in weeklies:
         print(weekly)  # Series name
         ser = series.Series(weekly, data_collection.get_data(weeklies[weekly]))
-        print(ser.full_head_to_head)
         all_series.append(ser)
     with open("data.pickle", 'wb') as f:
         pickle.dump(all_series, f)

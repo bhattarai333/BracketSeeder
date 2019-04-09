@@ -1,8 +1,8 @@
-import pysmash
-import re
-
 import src.bracket as bracket
 import src.set as smash_set
+
+import pysmash
+import re
 
 
 def get_union(path):
@@ -41,7 +41,6 @@ def instantiate_head_to_head(names):
     return h2h
 
 def add_head_to_head(head_to_head, winner_name, loser_name, s):
-    #print(s)
     head_to_head[winner_name][0].append(s)
     head_to_head[loser_name][1].append(s)
 
@@ -52,10 +51,7 @@ def get_score_from_match(match):
     return score
 
 def process_smash(smashgg, key):
-    #endpoint = "https://api.smash.gg/gql/alpha"
-    #tournament_ID = smashgg["tournament_id"]
     bracket_IDs = smashgg["bracket_ids"]
-    #bracket_IDs = bracket_IDs[:-1]
     players = []
     IDs = {}
     for bracket_ID in bracket_IDs:

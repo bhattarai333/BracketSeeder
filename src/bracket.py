@@ -1,9 +1,7 @@
-import pandas as pd
-
 class Bracket:
     entrant_numbers = 0
     participants = []
-    head_to_head = pd.DataFrame
+    head_to_head = {}
     info_json = ""
     isSmashGG = True
 

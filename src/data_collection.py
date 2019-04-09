@@ -1,9 +1,9 @@
+import src.data_processing as data_processing
+
 import requests
 import pysmash
 import pysmash.exceptions as exceptions
 import json
-
-import src.data_processing as data_processing
 
 
 def get_API_keys():
@@ -23,12 +23,14 @@ def get_API_keys():
     return challonge_key, smash_key
 
 def determine_website(url):
+    # Determines if website is challonge or smash.gg
     if "challonge" in url:
         return 0
     else:
         return 1
 
 def separate_websites(tournament_url_list):
+    # Separate list of all URLs into two separate lists for each website
     challonge_list = []
     smash_list = []
     for url in tournament_url_list:
@@ -40,6 +42,14 @@ def separate_websites(tournament_url_list):
     return challonge_list, smash_list
 
 def get_challonge_name_from_URL(url):
+    """
+    Gets the bracket name from a url, for example:
+    https://challonge.com/cmpg100
+    returns: cmpg100
+    https://spartanweeklies.challonge.com/sw40
+    returns: spartanweeklies-sw40
+    """
+
     parts = url.split("challonge")
     suborg = parts[0]
 
@@ -57,8 +67,15 @@ def get_challonge_name_from_URL(url):
     return code
 
 def get_challonge_bracket(url, key):
+    """
+    Gets the JSON information from challonge
+    :param url: challonge URL
+    :param key: challonge API key
+    :return: full JSON data of bracket
+    """
     tournament_name = get_challonge_name_from_URL(url)
-    endpoint = "https://challonge.com/api/tournaments/%s.json?include_matches=1&include_participants=1&api_key=%s" % (tournament_name, key)
+    endpoint = "https://challonge.com/api/tournaments/%s.json?include_matches=1&include_participants=1&api_key=%s" \
+               % (tournament_name, key)
     response = requests.get(endpoint)
     json_data = json.loads(response.content.decode())
     return json_data
