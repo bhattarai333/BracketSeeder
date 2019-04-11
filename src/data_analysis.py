@@ -21,22 +21,34 @@ def get_permutations(all_entrants):
     val = nPr(length, 2)
     print("Calculating Permutations nPr(%s, 2): %s" % (length, val))
     perm_iter = permutations(all_entrants, 2)
+    return perm_iter
 
-    print("Removing Reversed Duplicates from Permutations %s/2" % val)
+def common_tournament(element, series_set):
+    p1 = element[0]
+    p2 = element[1]
+    common_series = []
+    for s in series_set:
+        series_entrants = s.full_entrants_list
+        if not (p1 in series_entrants and p2 in series_entrants):
+            continue
+        common_series.append(s)
 
-    perm = []
-    for element in perm_iter:
-        if element[0] > element[1]:
-            perm.append(element)
-    return perm
+    common_series.sort(key=lambda Series: Series.unique_entrants_num)
+    for s in common_series:
+        for bracket in s.brackets:
+            names = bracket.names_list
+            if p1 in names:
+                if p2 in names:
+                    #print("ADDED")
+                    return True
+    #print("REMOVED")
+    return False
 
-def construct_dataframe(permutations, series_set):
+def construct_dataframe_from_iter(perm_iter, series_set):
     df = pd.DataFrame(pd.np.empty((0, 9)))
     df.columns = ["Players", "H2H Set Count", "Avg Seeding Disparity", "Avg Placing Disparity", "Avg Seed Disparity Ratio", "Avg Loss Ratio", "Avg Win Ratio", "Avg Winning Seed Disparity Ratio", "Avg Losing Seed Disparity Ratio"]
-    df["Players"] = permutations
 
-
-    print(df)
+    perm = np.fromiter(perm_iter,)
 
 def create_full_list(series_set):
     all_entrants = []
@@ -49,17 +61,17 @@ def create_full_list(series_set):
 
 def analyze_data(series_set):
     all_entrants = create_full_list(series_set)
+    perm_iter = get_permutations(all_entrants)
 
-    permutation_path = "./resources/permutations.pickle"
-    exists = os.path.isfile(permutation_path)
-    if exists:
-        with open(permutation_path, 'rb') as f:
-            perm = pickle.load(f)
-    else:
-        perm = get_permutations(all_entrants)
-        with open(permutation_path, 'wb') as f:
-            pickle.dump(perm, f)
-
-
-    construct_dataframe(perm, series_set)
+    df = None
+    df = construct_dataframe_from_iter(perm_iter, series_set)
+    #dataframe_path = "./resources/dataframe.pd"
+    #exists = os.path.isfile(dataframe_path_path)
+    #if exists:
+    #    with open(dataframe_path_path, 'rb') as f:
+    #        df = pickle.load(f)
+    #else:
+    #    df = construct_dataframe_from_iter(perm_iter, series_set)
+    #    with open(dataframe_path_path, 'wb') as f:
+    #        pickle.dump(perm, f)
     return series_set  #delete this

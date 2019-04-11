@@ -1,6 +1,7 @@
 class Bracket:
     entrants_num = 0
     entrants_list = []
+    names_list = []
     head_to_head = {}
     info_json = ""
     isSmashGG = True
@@ -11,6 +12,7 @@ class Bracket:
         self.head_to_head = head_to_head
         self.isSmashGG = isSmashGG
         self.entrants_num = len(participants)
+        self.names_list = [row[1] for row in self.entrants_list]
 
     def __str__(self):
         if self.isSmashGG:

@@ -1,6 +1,6 @@
 import src.data_collection as data_collection
 import src.data_analysis as analysis
-import src.series as series
+from src.series import Series
 
 import pickle
 import os
@@ -62,7 +62,7 @@ else:
     weeklies = get_urls(tournament_path)
     for weekly in weeklies:
         print(weekly)  # Series name
-        ser = series.Series(weekly, data_collection.get_data(weeklies[weekly]))
+        ser = Series(weekly, data_collection.get_data(weeklies[weekly]))
         all_series.append(ser)
     with open(data_path, 'wb') as f:
         pickle.dump(all_series, f)
@@ -70,3 +70,4 @@ print("Starting Data Analysis")
 model = analysis.analyze_data(all_series)
 prediction = predict(model)
 write_to_file(prediction)
+
