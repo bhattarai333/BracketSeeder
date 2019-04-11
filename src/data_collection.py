@@ -6,7 +6,7 @@ import pysmash.exceptions as exceptions
 import json
 
 
-def get_API_keys():
+def get_API_keys(path):
     """
     Sample apikey.txt:
 
@@ -16,7 +16,7 @@ def get_API_keys():
     }
     """
 
-    with open("apikey.txt", 'r') as f:
+    with open(path, 'r') as f:
         json_keys = json.loads(f.read())
     challonge_key = json_keys["challonge"]
     smash_key = json_keys["smash.gg"]
@@ -123,7 +123,7 @@ def collect_data(api_keys, urls):
 
 def get_data(urls):
     print("Starting Data Collection")
-    keys = get_API_keys()
+    keys = get_API_keys("./resources/apikey.txt")
     data = collect_data(keys, urls)
     data = data_processing.process_data(data, keys[1])
     return data

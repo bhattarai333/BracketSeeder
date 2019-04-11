@@ -20,10 +20,22 @@ def process_name(name):
         name = parts[-1]
 
     if '*' in name:
-        name.replace('*', '')
+        name = name.replace('*', '')
+
+    if '-' in name:
+        name = name.replace('-', '')
+
+    if '_' in name:
+        name = name.replace('_', '')
+
+    if '~' in name:
+        name = name.replace('~', '')
 
     if '(' in name and ')' in name:
-        re.sub(r" ?\([^)]+\)", "", name)
+        name = re.sub(r" ?\([^)]+\)", "", name)
+
+    if '\'' in name:
+        name = name.replace('\'', '')
 
     name = name.strip().lower()
 
@@ -61,7 +73,10 @@ def process_smash(smashgg, key):
             player_data = []
             name = process_name(player["tag"])
             placing = player["final_placement"]
-            seed_distance = player["seed"] - placing
+            try:
+                seed_distance = player["seed"] - placing
+            except TypeError:
+                seed_distance = 0
             ID = player["entrant_id"]
             IDs[str(ID)] = name
 
@@ -112,9 +127,12 @@ def process_challonge(challonge):
     for participant in participants:
         participant = participant["participant"]
         player_data = []
-        name = process_name(participant["name"])
+        name = process_name(participant["display_name"])
         placing = participant["final_rank"]
-        seed_distance = participant["seed"] - placing
+        try:
+            seed_distance = participant["seed"] - placing
+        except TypeError:
+            seed_distance = 0
         ID = participant["id"]
         IDs[ID] = name
 
@@ -164,4 +182,4 @@ def process_data(d, smashkey):
 
 
 smash = pysmash.SmashGG()  #bad practice, global variables
-union = get_union("union.txt")
+union = get_union("./resources/union.txt")

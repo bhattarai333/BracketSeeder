@@ -4,17 +4,31 @@ class Series:
     name = ""
     brackets = []
     full_head_to_head = {}
+    full_entrants_list = []
+    unique_entrants_num = 0
 
     def __init__(self, name, brackets):
         self.name = name
         self.brackets = brackets
+        self.full_entrants_list = self.combine_participants(brackets)
         self.full_head_to_head = self.combine_h2h(brackets)
+        self.unique_entrants_num = len(self.full_entrants_list)
 
     def __str__(self):
-        return "%s: %s" % (self.name, self.brackets)
+        return "%s(%s): %s" % (self.name, self.unique_entrants_num, self.brackets)
 
     def __repr__(self):
         return self.__str__()
+
+    @staticmethod
+    def combine_participants(brackets):
+        full_players = []
+        for bracket in brackets:
+            players = bracket.entrants_list
+            names = [row[1] for row in players]
+            full_players += names
+        full_players = list(set(full_players))
+        return full_players
 
     def combine_h2h(self, brackets):
         full_h2h = {}
