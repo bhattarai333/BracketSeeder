@@ -44,11 +44,20 @@ def common_tournament(element, series_set):
     #print("REMOVED")
     return False
 
-def construct_dataframe_from_iter(perm_iter, series_set):
-    df = pd.DataFrame(pd.np.empty((0, 9)))
-    df.columns = ["Players", "H2H Set Count", "Avg Seeding Disparity", "Avg Placing Disparity", "Avg Seed Disparity Ratio", "Avg Loss Ratio", "Avg Win Ratio", "Avg Winning Seed Disparity Ratio", "Avg Losing Seed Disparity Ratio"]
+def construct_dataframe_from_iter(series_set):
 
-    perm = np.fromiter(perm_iter,)
+    for ser in series_set:
+        for bracket in ser.brackets:
+            features = bracket.analysis_features
+
+    print("Creating DataFrame")
+    df = pd.DataFrame.from_dict(features, orient='index')
+    df.columns = ["H2H Set Count", "H2H Games", "Avg Win Ratio", "Avg Loss Ratio", "Avg Seeding Difference", "Avg Placing Difference", "Avg Seed Disparity Ratio"]#, "Avg Winning Seed Disparity Ratio", "Avg Losing Seed Disparity Ratio"]
+    df.to_excel("./resources/df.xlsx")
+
+
+    return df
+
 
 def create_full_list(series_set):
     all_entrants = []
@@ -60,11 +69,11 @@ def create_full_list(series_set):
 
 
 def analyze_data(series_set):
-    all_entrants = create_full_list(series_set)
-    perm_iter = get_permutations(all_entrants)
+    #all_entrants = create_full_list(series_set)
+    #perm_iter = get_permutations(all_entrants)
 
-    df = None
-    df = construct_dataframe_from_iter(perm_iter, series_set)
+    df = construct_dataframe_from_iter(series_set)
+    print(df)
     #dataframe_path = "./resources/dataframe.pd"
     #exists = os.path.isfile(dataframe_path_path)
     #if exists:

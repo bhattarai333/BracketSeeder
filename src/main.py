@@ -64,10 +64,10 @@ else:
         print(weekly)  # Series name
         ser = Series(weekly, data_collection.get_data(weeklies[weekly]))
         all_series.append(ser)
-    with open(data_path, 'wb') as f:
-        pickle.dump(all_series, f)
+    #with open(data_path, 'wb') as f:
+    #    pickle.dump(all_series, f)
 print("Starting Data Analysis")
 model = analysis.analyze_data(all_series)
-prediction = predict(model)
-write_to_file(prediction)
+#prediction = predict(model)
+#write_to_file(prediction)
 

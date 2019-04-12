@@ -29,9 +29,9 @@ class Set:
                     parts.remove('-')
 
         if parts[0] > parts[1]:
-            return score
+            return parts[0] + '~' + parts[1]
         else:
-            return parts[1] + '-' + parts[0]
+            return parts[1] + '~' + parts[0]
 
     @staticmethod
     def process_name(name):
