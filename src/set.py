@@ -1,7 +1,4 @@
 class Set:
-    winner = ""
-    loser = ""
-    score = ""
 
     def __init__(self, winner, loser, score):
         self.winner = self.process_name(winner)

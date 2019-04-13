@@ -5,6 +5,7 @@ from src.series import Series
 import os
 import math
 from itertools import permutations
+import copy
 import pandas as pd
 import numpy as np
 import pickle
@@ -43,19 +44,31 @@ def common_tournament(element, series_set):
                     return True
     #print("REMOVED")
     return False
+def merge_dataframes(df, full_df):
+
+    return df #delete this
+
+def combine_dataframes(all_df):
+    full_df = pd.DataFrame()
+    for df in all_df:
+        full_df = merge_dataframes(df, full_df)
+    return full_df
 
 def construct_dataframe_from_iter(series_set):
 
+    print("Creating DataFrame")
+    all_df = []
     for ser in series_set:
         for bracket in ser.brackets:
-            features = bracket.analysis_features
+            print(len(bracket.analysis_features))
+            print(len(bracket.head_to_head))
+            df = pd.DataFrame.from_dict(bracket.analysis_features, orient='index')
+            df.columns = ["H2H Set Count", "H2H Games", "Avg Win Ratio", "Avg Loss Ratio", "Avg Seeding Difference", "Avg Placing Difference", "Avg Seed Disparity Ratio", "Avg Winning Seed Disparity Ratio", "Avg Losing Seed Disparity Ratio"]
+            all_df.append(df)
 
-    print("Creating DataFrame")
-    df = pd.DataFrame.from_dict(features, orient='index')
-    df.columns = ["H2H Set Count", "H2H Games", "Avg Win Ratio", "Avg Loss Ratio", "Avg Seeding Difference", "Avg Placing Difference", "Avg Seed Disparity Ratio"]#, "Avg Winning Seed Disparity Ratio", "Avg Losing Seed Disparity Ratio"]
+    df = combine_dataframes(all_df)
+
     df.to_excel("./resources/df.xlsx")
-
-
     return df
 
 
@@ -73,7 +86,7 @@ def analyze_data(series_set):
     #perm_iter = get_permutations(all_entrants)
 
     df = construct_dataframe_from_iter(series_set)
-    print(df)
+    #print(df)
     #dataframe_path = "./resources/dataframe.pd"
     #exists = os.path.isfile(dataframe_path_path)
     #if exists:

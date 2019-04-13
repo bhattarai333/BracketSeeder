@@ -50,22 +50,16 @@ def predict(m):
 def write_to_file(prediction):
     pass
 
-data_path = "./resources/data.pickle"
+#data_path = "./resources/data.pickle"
 tournament_path = "./resources/tournaments.txt"
-exists = os.path.isfile(data_path)
+#exists = os.path.isfile(data_path)
 
 all_series = []
-if exists:
-    with open(data_path, 'rb') as f:
-        all_series = pickle.load(f)
-else:
-    weeklies = get_urls(tournament_path)
-    for weekly in weeklies:
-        print(weekly)  # Series name
-        ser = Series(weekly, data_collection.get_data(weeklies[weekly]))
-        all_series.append(ser)
-    #with open(data_path, 'wb') as f:
-    #    pickle.dump(all_series, f)
+weeklies = get_urls(tournament_path)
+for weekly in weeklies:
+    print(weekly)  # Series name
+    ser = Series(weekly, data_collection.get_data(weeklies[weekly]))
+    all_series.append(ser)
 print("Starting Data Analysis")
 model = analysis.analyze_data(all_series)
 #prediction = predict(model)

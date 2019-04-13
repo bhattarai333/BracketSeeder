@@ -1,11 +1,6 @@
 import copy
 
 class Series:
-    name = ""
-    brackets = []
-    full_head_to_head = {}
-    full_entrants_list = []
-    unique_entrants_num = 0
 
     def __init__(self, name, brackets):
         self.name = name
