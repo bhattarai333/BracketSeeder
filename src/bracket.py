@@ -33,7 +33,7 @@ class Bracket:
     def set_features(self):
         p = self.calculate_player_permutations()
         features = {}
-        for perm in p:#
+        for perm in p:
             data = self.calculate_features(perm)
             features[perm] = data
         return features
@@ -51,13 +51,20 @@ class Bracket:
         features.append(h2h[1])
         features.append(h2h[2])
         features.append(h2h[3])
+        features.append(h2h[4])
+        features.append(h2h[5])
+        features.append(h2h[6])
+        features.append(h2h[7])
         seeding_data = self.get_seed_disparity(players)
         features.append(seeding_data[0])
         features.append(seeding_data[1])
         features.append(seeding_data[2])
+        features.append(seeding_data[3])
         win_loss_ratio = self.get_win_loss_ratio(players)
         features.append(win_loss_ratio[0])
         features.append(win_loss_ratio[1])
+        features.append(win_loss_ratio[2])
+        features.append(win_loss_ratio[3])
         #self.analysis_features[players] = features
         return features
 
@@ -128,13 +135,7 @@ class Bracket:
         if p2_loss_len != 0:
             p2_loss_ratio = float(p2_loss_sum / p2_loss_len)
 
-        #winning_ratio = 0
-        #if p2_win_ratio != 0:
-        #    winning_ratio = p1_win_ratio/p2_win_ratio
-        #losing_ratio = 0
-        #if p2_loss_ratio !=0:
-        #    losing_ratio = p1_loss_ratio/p2_loss_ratio
-        return (p1_win_ratio, p2_win_ratio), (p1_loss_ratio, p2_loss_ratio)
+        return p1_win_ratio, p2_win_ratio, p1_loss_ratio, p2_loss_ratio
 
     def get_seed_disparity(self, players):
         p1 = players[0]
@@ -153,7 +154,7 @@ class Bracket:
         p2_seed = p2_data[0] + p2_data[2]
         p1_placement = p1_data[0]
         p2_placement = p2_data[0]
-        return abs(p1_seed - p2_seed), abs(p1_placement - p2_placement), (p1_seed - p1_placement, p2_seed - p2_placement)
+        return p2_seed - p1_seed, p2_placement - p1_placement, p1_seed - p1_placement, p2_seed - p2_placement
 
 
     def get_h2h(self, players):
@@ -207,19 +208,9 @@ class Bracket:
         win_len2 = len(wins2)
         loss_len2 = len(losses2)
 
-        #if win_len2 == 0:
-        #    win_ratio = 0
-        #else:
-        #    win_ratio = float(win_len / win_len2)
-
-        #if loss_len2 == 0:
-        #    loss_ratio = 0
-        #else:
-        #    loss_ratio = float(loss_len / loss_len2)
 
 
-
-        return (win_count, loss_count), (p1_games, p2_games), (win_len, win_len2), (loss_len, loss_len2)
+        return win_count, loss_count, p1_games, p2_games, win_len, win_len2, loss_len, loss_len2
 
 
     def calculate_player_permutations(self):

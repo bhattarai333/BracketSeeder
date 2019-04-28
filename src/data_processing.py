@@ -1,185 +1,89 @@
-import src.bracket as bracket
-import src.set as smash_set
+from src.set import Set as smash_set
+from src.bracket import Bracket
+from src.series import Series
 
-import pysmash
-import re
-
-
-def get_union(path):
-    u = {}
-    with open(path, 'r') as f:
-        for line in f:
-            line = line.strip().lower()
-            parts = line.split(',')
-            u[parts[0]] = parts[1]
-    return u
-
-def process_name(name):
-    if '|' in name:
-        parts = name.rpartition('|')
-        name = parts[-1]
-
-    if '*' in name:
-        name = name.replace('*', '')
-
-    if '-' in name:
-        name = name.replace('-', '')
-
-    if '_' in name:
-        name = name.replace('_', '')
-
-    if '~' in name:
-        name = name.replace('~', '')
-
-    if '(' in name and ')' in name:
-        name = re.sub(r" ?\([^)]+\)", "", name)
-
-    if '\'' in name:
-        name = name.replace('\'', '')
-
-    name = name.strip().lower()
-
-    if name in union:
-        new_name = union[name]
-        name = new_name
-
-    return name.strip().lower()
-
-def instantiate_head_to_head(names):
-    h2h = {}
-    for name in names:
-        tup = ([], [])
-        h2h[name] = tup
-    return h2h
-
-def add_head_to_head(head_to_head, winner_name, loser_name, s):
-    head_to_head[winner_name][0].append(s)
-    head_to_head[loser_name][1].append(s)
-
-def get_score_from_match(match):
-    entrant_1_score = match["entrant_1_score"]
-    entrant_2_score = match["entrant_2_score"]
-    score = str(entrant_1_score) + '-' + str(entrant_2_score)
-    return score
-
-def process_smash(smashgg, key):
-    bracket_IDs = smashgg["bracket_ids"]
-    players = []
-    IDs = {}
-    for bracket_ID in bracket_IDs:
-        players_json = smash.bracket_show_players(bracket_ID)  #bad practice, collecting data in data_processing
-        ind_players = []
-        for player in players_json:
-            player_data = []
-            name = process_name(player["tag"])
-            placing = player["final_placement"]
-            try:
-                seed_distance = player["seed"] - placing
-            except TypeError:
-                seed_distance = 0
-            ID = player["entrant_id"]
-            IDs[str(ID)] = name
-
-            player_data.append(placing)
-            player_data.append(name)
-            player_data.append(seed_distance)
-            ind_players.append(player_data)
-        players += ind_players
-
-    players = sorted(players, key=lambda x: x[0])
-
-    names = [row[1] for row in players]
-    head_to_head = instantiate_head_to_head(names)
+import os
+import math
+from itertools import permutations
+import copy
+import pandas as pd
+import numpy as np
+import pickle
+import sklearn
 
 
-    for bracket_ID in bracket_IDs:
-        matches = smash.bracket_show_sets(bracket_ID)  #bad practice, collecting data in data_processing
-        for match in matches:
-            try:
-                winner_ID = match["winner_id"]
-                winner_name = IDs[winner_ID]
-                loser_ID = match["loser_id"]
-                loser_name = IDs[loser_ID]
-                score = get_score_from_match(match)
-                s = smash_set.Set(winner_name, loser_name, score)
-                add_head_to_head(head_to_head, winner_name, loser_name, s)
-            except KeyError:
-                continue
+def find_ratio(df, name):
+    n1 = name + '1'
+    n2 = name + '2'
+    #if df[n2] == 0:
+    #    df[name] = 0
+    #else:
+    df[name] = df[n1] / df[n2]
+    df = df.drop(columns=[n1, n2])
+    return df
 
-    b = bracket.Bracket(players, smashgg, head_to_head, 1)
-    return b
+def handle_duplicates(df):
+    df = df.groupby(df.index).agg({
+        "H2H Set Count1": sum,
+        "H2H Set Count2": sum,
+        "H2H Games1": sum,
+        "H2H Games2": sum,
+        "Avg Win Ratio1": sum,
+        "Avg Win Ratio2": sum,
+        "Avg Loss Ratio1": sum,
+        "Avg Loss Ratio2": sum,
+        "Avg Seeding Difference": "mean",
+        "Avg Placing Difference": "mean",
+        "Avg Seed Disparity Ratio1": "mean",
+        "Avg Seed Disparity Ratio2": "mean",
+        "Avg Winning Seed Disparity Ratio1": "mean",
+        "Avg Winning Seed Disparity Ratio2": "mean",
+        "Avg Losing Seed Disparity Ratio1": "mean",
+        "Avg Losing Seed Disparity Ratio2": "mean"
+        # Use these metrics to predict set count
+    })
 
-def process_smash_list(smash_info, key):
-    smash_brackets = []
-    for smashgg in smash_info:
-        result = process_smash(smashgg, key)
-        smash_brackets.append(result)
-    return smash_brackets
+    df = find_ratio(df, "H2H Set Count")
+    df = find_ratio(df, "H2H Games")
+    df = find_ratio(df, "Avg Win Ratio")
+    df = find_ratio(df, "Avg Loss Ratio")
+    df = find_ratio(df, "Avg Seed Disparity Ratio")
+    df = find_ratio(df, "Avg Winning Seed Disparity Ratio")
+    df = find_ratio(df, "Avg Losing Seed Disparity Ratio")
+    return df
 
+def combine_dataframes(all_df):
+    full_df = pd.DataFrame()
+    for df in all_df:
+        full_df = pd.concat([full_df, df], join='outer')
+    full_df = handle_duplicates(full_df)
+    return full_df
 
+def construct_dataframe_from_iter(series_set):
 
+    print("Creating DataFrame")
+    all_df = []
+    col_names = ["H2H Set Count1", "H2H Set Count2", "H2H Games1", "H2H Games2", "Avg Win Ratio1", "Avg Win Ratio2", "Avg Loss Ratio1", "Avg Loss Ratio2", "Avg Seeding Difference", "Avg Placing Difference", "Avg Seed Disparity Ratio1", "Avg Seed Disparity Ratio2", "Avg Winning Seed Disparity Ratio1", "Avg Winning Seed Disparity Ratio2", "Avg Losing Seed Disparity Ratio1", "Avg Losing Seed Disparity Ratio2"]
 
-
-def process_challonge(challonge):
-    participants = challonge["tournament"]["participants"]
-    players = []
-    IDs = {}
-    for participant in participants:
-        participant = participant["participant"]
-        player_data = []
-        name = process_name(participant["display_name"])
-        placing = participant["final_rank"]
-        try:
-            seed_distance = participant["seed"] - placing
-        except TypeError:
-            seed_distance = 0
-        ID = participant["id"]
-        IDs[ID] = name
-
-
-        player_data.append(placing)
-        player_data.append(name)
-        player_data.append(seed_distance)
-        players.append(player_data)
-    players = sorted(players, key=lambda x: x[0])
-
-    names = [row[1] for row in players]
-    head_to_head = instantiate_head_to_head(names)
-
-
-
-
-    matches = challonge["tournament"]["matches"]
-    for match in matches:
-        match = match["match"]
-        winner_ID = match["winner_id"]
-        winner_name = IDs[winner_ID]
-        loser_ID = match["loser_id"]
-        loser_name = IDs[loser_ID]
-        score = match["scores_csv"]
-        s = smash_set.Set(winner_name, loser_name, score)
-        add_head_to_head(head_to_head, winner_name, loser_name, s)
-
-    b = bracket.Bracket(players, challonge, head_to_head, 0)
-    return b
-
-def process_challonge_list(challonge_info):
-    challonge_brackets = []
-    for challonge in challonge_info:
-        result = process_challonge(challonge)
-        challonge_brackets.append(result)
-    return challonge_brackets
-
-def process_data(d, smashkey):
-    print("Starting Data Processing")
-    challonge_info = d[0]
-    smash_info = d[1]
-    challonge_brackets = process_challonge_list(challonge_info)
-    smash_brackets = process_smash_list(smash_info, smashkey)
+    for ser in series_set:
+        for bracket in ser.brackets:
+            df = pd.DataFrame.from_dict(bracket.analysis_features, orient='index', columns=col_names)
+            all_df.append(df)
+    df = combine_dataframes(all_df)
+    return df
 
 
-    return challonge_brackets + smash_brackets
+def create_full_list(series_set):
+    all_entrants = []
+    for series in series_set:
+        all_entrants += series.full_entrants_list
+    all_entrants = list(set(all_entrants))
+    all_entrants.sort()
+    return all_entrants
 
 
-smash = pysmash.SmashGG()  #bad practice, global variables
-union = get_union("./resources/union.txt")
+def process_data(series_set):
+    df = construct_dataframe_from_iter(series_set)
+    df = df.replace([np.inf, -np.inf], np.nan)
+    df = df.fillna(0)
+    return df

@@ -1,8 +1,10 @@
 import src.data_collection as data_collection
+import src.data_processing as process
 import src.data_analysis as analysis
+import src.predict_data as predict
 from src.series import Series
 
-import pickle
+import pandas as pd
 import os
 
 def get_urls(tournament_file_path):
@@ -41,27 +43,37 @@ def get_urls(tournament_file_path):
         output[name] = weekly_series.copy()
     return output
 
-def analyze_data(series_set):
-    return series_set
+def get_entrants(path):
+    entrants = []
+    with open(path, 'r') as f:
+        for line in f:
+            entrants.append(line.strip())
+    return entrants
 
-def predict(m):
-    return m
-
-def write_to_file(prediction):
-    pass
-
-#data_path = "./resources/data.pickle"
 tournament_path = "./resources/tournaments.txt"
-#exists = os.path.isfile(data_path)
+dataframe_path = "./resources/df.xlsx"
+entrants_path = "./resources/entrants.txt"
 
-all_series = []
-weeklies = get_urls(tournament_path)
-for weekly in weeklies:
-    print(weekly)  # Series name
-    ser = Series(weekly, data_collection.get_data(weeklies[weekly]))
-    all_series.append(ser)
+exists = os.path.isfile(dataframe_path)
+
+if exists:
+    df = pd.read_excel(dataframe_path)
+else:
+    all_series = []
+    weeklies = get_urls(tournament_path)
+    for weekly in weeklies:
+        print(weekly)  # Series name
+        ser = Series(weekly, data_collection.get_data(weeklies[weekly]))
+        all_series.append(ser)
+    print("Starting Data Processing")
+    df = process.process_data(all_series)
+    print(df)
+    df.to_excel(dataframe_path)
 print("Starting Data Analysis")
-model = analysis.analyze_data(all_series)
-#prediction = predict(model)
-#write_to_file(prediction)
+model = analysis.start_analysis(df)
+entrants = get_entrants(entrants_path)
+print(entrants)
+prediction = predict.start_prediction(model, entrants)
+
+
 

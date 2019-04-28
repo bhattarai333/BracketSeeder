@@ -1,4 +1,4 @@
-import src.data_processing as data_processing
+import src.data_preprocessing as data_processing
 
 import requests
 import pysmash
@@ -125,7 +125,7 @@ def get_data(urls):
     print("Starting Data Collection")
     keys = get_API_keys("./resources/apikey.txt")
     data = collect_data(keys, urls)
-    data = data_processing.process_data(data, keys[1])
+    data = data_processing.preprocess_data(data, keys[1])
     return data
 
 
