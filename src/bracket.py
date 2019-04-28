@@ -195,8 +195,16 @@ class Bracket:
                     loss_count += 1
                     score = loss.score
                     parts = score.split('~')
-                    p1_games += int(parts[1])
-                    p2_games += int(parts[0])
+                    if parts[0] == 'None':
+                        p2_score = 0
+                    else:
+                        p2_score = int(parts[0])
+                    if parts[1] == 'None':
+                        p1_score = 0
+                    else:
+                        p1_score = int(parts[1])
+                    p1_games += int(p1_score)
+                    p2_games += int(p2_score)
 
 
 
@@ -219,7 +227,7 @@ class Bracket:
         for element in perm_iter:
             p1 = element[0]
             p2 = element[1]
-            if p1 >= p2:
+            if p1 == p2:
                 continue
             perm.append(element)
         return perm

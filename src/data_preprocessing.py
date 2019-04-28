@@ -4,7 +4,6 @@ from src.set import Set as Smash_Set
 import pysmash
 import re
 
-
 def get_union(path):
     u = {}
     with open(path, 'r') as f:

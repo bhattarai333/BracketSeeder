@@ -4,8 +4,9 @@ import src.data_analysis as analysis
 import src.predict_data as predict
 from src.series import Series
 
-import pandas as pd
 import os
+import ast
+import pandas as pd
 
 def get_urls(tournament_file_path):
     """
@@ -44,36 +45,53 @@ def get_urls(tournament_file_path):
     return output
 
 def get_entrants(path):
+    """
+    Example entrants.txt:
+    gomakenpi
+    nebula
+    nom
+    dylster
+    j3
+    ...
+    """
     entrants = []
     with open(path, 'r') as f:
         for line in f:
             entrants.append(line.strip())
     return entrants
 
+def write_prediction(pred, path):
+    with open(path, 'w') as f:
+        i = 0
+        for line in pred:
+            i += 1
+            content = str(i) + ". " + line + '\n'
+            f.write(content)
+
+
 tournament_path = "./resources/tournaments.txt"
 dataframe_path = "./resources/df.xlsx"
 entrants_path = "./resources/entrants.txt"
+prediction_path = "./resources/prediction.txt"
 
 exists = os.path.isfile(dataframe_path)
 
-if exists:
-    df = pd.read_excel(dataframe_path)
-else:
-    all_series = []
-    weeklies = get_urls(tournament_path)
-    for weekly in weeklies:
-        print(weekly)  # Series name
-        ser = Series(weekly, data_collection.get_data(weeklies[weekly]))
-        all_series.append(ser)
-    print("Starting Data Processing")
-    df = process.process_data(all_series)
-    print(df)
-    df.to_excel(dataframe_path)
+
+all_series = []
+weeklies = get_urls(tournament_path)
+for weekly in weeklies:
+    print(weekly)  # Series name
+    ser = Series(weekly, data_collection.get_data(weeklies[weekly]))
+    all_series.append(ser)
+print("Starting Data Processing")
+df = process.process_data(all_series)
+print(df.shape)
+df.to_excel(dataframe_path)
 print("Starting Data Analysis")
 model = analysis.start_analysis(df)
 entrants = get_entrants(entrants_path)
-print(entrants)
-prediction = predict.start_prediction(model, entrants)
-
+prediction = predict.start_prediction(model, entrants, df)
+print("Writing Prediction to File")
+write_prediction(prediction, prediction_path)
 
 

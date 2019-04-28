@@ -51,7 +51,6 @@ class Series:
     def ordered_list_merge(lst1, lst2):
         # https://stackoverflow.com/questions/55531786/how-to-merge-a-dictionary-with-two-lists-as-the-value
 
-
         resulting_list = lst1.copy()  # to ensure list 1 is not mutated by changes to resulting_list
         resulting_list.extend(x for x in lst2 if x not in resulting_list)
         return resulting_list

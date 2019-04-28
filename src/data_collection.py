@@ -83,6 +83,7 @@ def get_challonge_bracket(url, key):
 def get_challonge_brackets(urls, key):
     brackets = []
     for url in urls:
+        print(url)
         brackets.append(get_challonge_bracket(url, key))
     return brackets
 
@@ -104,6 +105,7 @@ def get_smash_bracket(url, key):
 def get_smash_brackets(urls, key):
     brackets = []
     for url in urls:
+        print(url)
         brackets.append(get_smash_bracket(url, key))
     return brackets
 

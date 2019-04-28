@@ -15,9 +15,6 @@ import sklearn
 def find_ratio(df, name):
     n1 = name + '1'
     n2 = name + '2'
-    #if df[n2] == 0:
-    #    df[name] = 0
-    #else:
     df[name] = df[n1] / df[n2]
     df = df.drop(columns=[n1, n2])
     return df
